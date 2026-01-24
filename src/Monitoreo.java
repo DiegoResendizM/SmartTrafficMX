@@ -1,8 +1,16 @@
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.JFileChooser;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 public class Monitoreo extends javax.swing.JFrame {
     private TrafficDataProcessor dataProcessor;
+    private javax.swing.JProgressBar progressBar;
+    private javax.swing.JLabel lblTiempo;
+    private javax.swing.Timer monitorTimer;
+    private int progresoMinutos = 0;
 
     public Monitoreo() {
         initComponents();
@@ -22,12 +30,16 @@ public class Monitoreo extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
         txtCiudad = new javax.swing.JTextField();
         txtAvenidaCentral = new javax.swing.JTextField();
         txtPeriferico = new javax.swing.JTextField();
         txtCarreteraNacional = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtResultados = new javax.swing.JTextArea();
+        lblTiempo = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Módulo Monitoreo - SmartTrafficMX");
@@ -74,6 +86,14 @@ public class Monitoreo extends javax.swing.JFrame {
             }
         });
 
+        jButton5 = new javax.swing.JButton();
+        jButton5.setText("EXPORTAR CSV");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
         txtAvenidaCentral.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtAvenidaCentralActionPerformed(evt);
@@ -90,6 +110,11 @@ public class Monitoreo extends javax.swing.JFrame {
         txtResultados.setRows(5);
         jScrollPane1.setViewportView(txtResultados);
 
+        lblTiempo.setText("Progreso: 0/360 min");
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(360);
+        progressBar.setStringPainted(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -100,6 +125,8 @@ public class Monitoreo extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 635, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel6)
+                    .addComponent(lblTiempo)
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 635, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel2)
@@ -121,7 +148,10 @@ public class Monitoreo extends javax.swing.JFrame {
                         .addGap(120, 120, 120)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(30, 30, 30)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(120, 120, 120)
+                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(135, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -153,6 +183,12 @@ public class Monitoreo extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
+                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(lblTiempo)
+                .addGap(8, 8, 8)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20)
                 .addComponent(jLabel6)
                 .addGap(18, 18, 18)
@@ -185,6 +221,23 @@ public class Monitoreo extends javax.swing.JFrame {
             txtResultados.append("Actualizaciones cada minuto\n\n");
 
             jButton1.setEnabled(false);
+            progresoMinutos = 0;
+            progressBar.setValue(0);
+            lblTiempo.setText("Progreso: 0/360 min");
+
+            // Temporizador de progreso estimado (100ms ~= 1 minuto simulado)
+            monitorTimer = new javax.swing.Timer(100, new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    progresoMinutos++;
+                    if (progresoMinutos > 360) progresoMinutos = 360;
+                    progressBar.setValue(progresoMinutos);
+                    lblTiempo.setText(String.format("Progreso: %d/360 min", progresoMinutos));
+                    if (progresoMinutos >= 360) {
+                        ((javax.swing.Timer)e.getSource()).stop();
+                    }
+                }
+            });
+            monitorTimer.start();
 
             HiloVialidad hilo1 = new HiloVialidad("Avenida Central", t1, txtResultados, ciudad);
             HiloVialidad hilo2 = new HiloVialidad("Periférico Metropolitano", t2, txtResultados, ciudad);
@@ -201,6 +254,11 @@ public class Monitoreo extends javax.swing.JFrame {
                     hilo3.join();
                     SwingUtilities.invokeLater(() -> {
                         jButton1.setEnabled(true);
+                        if (monitorTimer != null) {
+                            monitorTimer.stop();
+                        }
+                        progressBar.setValue(360);
+                        lblTiempo.setText("Progreso: 360/360 min (Completado)");
                         JOptionPane.showMessageDialog(this, 
                             "Simulación completada.\nArchivo: SmartTrafficMX_" + ciudad + ".txt");
                     });
@@ -301,6 +359,22 @@ public class Monitoreo extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            String csv = dataProcessor.generateCsvReport();
+            JFileChooser chooser = new JFileChooser();
+            chooser.setSelectedFile(new java.io.File("reporte_trafico.csv"));
+            int res = chooser.showSaveDialog(this);
+            if (res == JFileChooser.APPROVE_OPTION) {
+                java.io.File file = chooser.getSelectedFile();
+                Files.write(Paths.get(file.getAbsolutePath()), csv.getBytes(StandardCharsets.UTF_8));
+                JOptionPane.showMessageDialog(this, "CSV exportado: " + file.getAbsolutePath());
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al exportar CSV: " + ex.getMessage());
+        }
+    }
+
      public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -331,6 +405,7 @@ public class Monitoreo extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

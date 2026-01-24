@@ -108,6 +108,51 @@ public class TrafficDataProcessor {
         
         return report.toString();
     }
+
+    /**
+     * Genera un reporte en formato CSV con datos e incidentes
+     * Columnas:
+     * - Datos: location,vehicleCount
+     * - Incidentes: timestamp,location,description
+     * @return Contenido CSV en UTF-8
+     */
+    public String generateCsvReport() {
+        StringBuilder csv = new StringBuilder();
+        // Encabezados de datos
+        csv.append("location,vehicleCount\n");
+        for (Map.Entry<String, Integer> entry : trafficData.entrySet()) {
+            // Escapar comas en location con comillas
+            String location = entry.getKey().replace("\"", "\"\"");
+            csv.append('"').append(location).append('"').append(',').append(entry.getValue()).append("\n");
+        }
+
+        // Separador y encabezados de incidentes
+        csv.append("\n");
+        csv.append("timestamp,location,description\n");
+        for (String incident : incidentReports) {
+            // Formato original: "[YYYY-MM-DD HH:mm:ss] location: description"
+            try {
+                int endTs = incident.indexOf(']');
+                String ts = incident.substring(1, endTs);
+                String rest = incident.substring(endTs + 2); // salta espacio tras ]
+                int colonIdx = rest.indexOf(':');
+                String loc = rest.substring(0, colonIdx).trim().replace("\"", "\"\"");
+                String desc = rest.substring(colonIdx + 1).trim();
+                // Si hay prefijo ':' añadir espacio de limpieza
+                if (desc.startsWith(":")) desc = desc.substring(1).trim();
+                desc = desc.replace("\"", "\"\"");
+                csv.append('"').append(ts).append('"').append(',')
+                   .append('"').append(loc).append('"').append(',')
+                   .append('"').append(desc).append('"').append("\n");
+            } catch (Exception e) {
+                // Si falla el parseo, poner todo en la columna description
+                String safe = incident.replace("\"", "\"\"");
+                csv.append(",,")
+                   .append('"').append(safe).append('"').append("\n");
+            }
+        }
+        return csv.toString();
+    }
     
     /**
      * Limpia todos los datos almacenados

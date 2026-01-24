@@ -1,5 +1,5 @@
 import java.io.*;
-import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import javax.swing.*;
 
@@ -35,7 +35,8 @@ public class HiloVialidad extends Thread {
     public void run() {
         String nombreArchivo = "SmartTrafficMX_" + nombreCiudad + ".txt";
         
-        try (FileWriter escritor = new FileWriter(nombreArchivo, true)) {
+        try (BufferedWriter escritor = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(nombreArchivo, true), StandardCharsets.UTF_8))) {
             // Escribir encabezado para esta vialidad
             String encabezado = "\n========== " + nombreVialidad + " ==========\n";
             escritor.write(encabezado);
@@ -68,9 +69,8 @@ public class HiloVialidad extends Thread {
                 String registro = String.format("Minuto %3d | %s | Tráfico: %3d veh/min | Variación: %+3d | Estado: %s",
                         minuto, nombreVialidad, traficoActual, variacion, clasificacion);
 
-                // Escribir en archivo
+                // Escribir en archivo (flush no en cada línea para rendimiento)
                 escritor.write(registro + System.lineSeparator());
-                escritor.flush();
 
                 // Actualizar interfaz gráfica
                 final String registroFinal = registro;
