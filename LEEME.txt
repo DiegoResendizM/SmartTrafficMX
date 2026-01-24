@@ -1,0 +1,64 @@
+=== SMARTTRAFFICMX - SISTEMA DE MONITOREO DE TRÁFICO ===
+
+DESCRIPCIÓN:
+Sistema completo de monitoreo y análisis de tráfico vehicular con interfaz gráfica.
+
+ARCHIVOS DEL PROYECTO:
+- inicio.java: Ventana principal de bienvenida
+- Monitoreo.java: Interfaz de monitoreo con funciones de análisis
+- TrafficDataProcessor.java: Procesador de datos de tráfico
+- HiloVialidad.java: Gestión de hilos para simulación
+- DemoIntegracion.java: Programa de demostración
+
+CARACTERÍSTICAS:
+1. Monitoreo en tiempo real de 3 vías principales
+2. Análisis estadístico de datos de tráfico
+3. Generación de reportes completos
+4. Sistema de reporte de incidentes
+5. Comparación entre diferentes ubicaciones
+
+CÓMO EJECUTAR:
+
+1. Compilar todos los archivos:
+   cd src
+   javac -cp . *.java
+
+2. Ejecutar la interfaz gráfica:
+   java -cp . inicio
+
+3. Ejecutar la demostración:
+   java -cp . DemoIntegracion
+
+USO DE LA INTERFAZ GRÁFICA:
+
+1. Iniciar el programa con "java -cp . inicio"
+2. Haz clic en "Iniciar Módulo Monitoreo"
+3. Ingresa los datos:
+   - Nombre de la ciudad
+   - Tráfico inicial de cada vía (vehículos/minuto)
+4. Usa los botones:
+   - "INICIAR MONITOREO": Comienza la simulación
+   - "ANALIZAR DATOS": Muestra estadísticas básicas
+   - "REPORTE COMPLETO": Genera reporte detallado
+   - "SALIR": Cierra el programa
+
+FUNCIONES DEL TRAFFICDATAPROCESSOR:
+- addTrafficData(): Agrega datos de tráfico por ubicación
+- calculateAverageTraffic(): Calcula promedio de vehículos
+- findHighestTrafficLocation(): Encuentra la ubicación con más tráfico
+- reportIncident(): Reporta incidentes de tráfico
+- generateTrafficReport(): Genera reporte completo
+- clearAllData(): Limpia todos los datos
+
+EJEMPLO DE USO EN CÓDIGO:
+TrafficDataProcessor processor = new TrafficDataProcessor();
+processor.addTrafficData("CDMX - Centro", 150);
+processor.reportIncident("CDMX - Centro", "Congestión severa");
+String reporte = processor.generateTrafficReport();
+
+REQUISITOS:
+- Java 8 o superior
+- Sistema operativo Windows/Linux/Mac
+
+AUTOR:
+Sistema desarrollado para SmartTrafficMX
